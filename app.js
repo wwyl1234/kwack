@@ -6,6 +6,11 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
+// Says hello when app home is opened
+app.event('app_home_opened', ({ event, say }) => {  
+    say(`Hello world, <@${event.user}>!`);
+});
+
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
     // say() sends a message to the channel where the event was triggered
