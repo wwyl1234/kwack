@@ -1,0 +1,21 @@
+{
+  "name": "kwack",
+  "version": "1.0.0",
+  "description": "A slack bot app to encourage members to participate and encourage each other.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "kwack",
+    "slack",
+    "bot",
+    "app",
+    "bolt"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@slack/bolt": "^2.0.1"
+  }
+}
