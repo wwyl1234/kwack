@@ -29,7 +29,7 @@ app.message(':bread:', async ({ message, say, context }) => {
     }
     console.debug(messageUsernames);
 
-    const result = await app.client.users.list({
+    const result = app.client.users.list({
       token: context.botToken
     });
 
@@ -50,15 +50,15 @@ app.message(':bread:', async ({ message, say, context }) => {
     if (receivers === []){
       await say(`<@${giver}> wants to give bread to someone!`);
     } else {
+      let resultMessage = ''
       receivers.forEach( function(user) {
         // TODO deal with DB 
         let userId = user['id'];
         let username = user['name'];
-        await say(`${username} got bread from <@${giver}>!`)
-      
+        resultMessage += `${username} got bread from <@${giver}>!\n`;
        }
       )
-
+      await say(resultMessage);
     }
   }
     catch (error) {
