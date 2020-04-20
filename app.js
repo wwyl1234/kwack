@@ -12,46 +12,60 @@ app.event('app_home_opened', ({ event, say }) => {
     say(`Hello <@${event.user}>!`);
 });
 
+// Listens to incoming messages that contain ":bread:"
+app.message(':bread:', async ({ message, say, context }) => {
+  console.debug(message.text);
+  let giver = message.user;
+  let receivers = [];
+  let messageUsernames = [];
 
-// Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
-    console.log(message.text);
-    console.log(message.user);
+  try {
+    // Parse for <@{username}> and check if currentUser is in the message as well
+    let regex = /<@([A-z]+)>/g
+    let match = regex.exec(message.text);
+    while (match != null) {
+      messageUsernames.push(match[1]);
+      match = regex.exec(message.text);
+    }
+    console.debug(messageUsernames);
 
-    // say() sends a message to the channel where the event was triggered
-    await say({
-        blocks: [
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": `Hey there <@${message.user}>!`
-            },
-            "accessory": {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "Click Me"
-              },
-              "action_id": "button_click"
-            }
-          }
-        ]
-      });
+    const result = await app.client.users.list({
+      token: context.botToken
     });
 
-  // Listens to incoming messages that contain ":bread:"
-  app.message(':bread:', async ({ message, say }) => {
-    console.log(message.text);
-    let giver = message.user;
-    let receivers = [];
-    // Parse for <@{username}> and check if currentUser is in the message as well
-    // TODO figure out if username is actually a user 
+    console.debug(result);
+    let userList = result['members'];
+     // figure out if username is actually a user 
+    messageUsernames.forEach(function (username){
+      let potentialUser = getUser(username, userList);
+      if (potentialUser.length !== 0){
+        // There should be only one potential user
+        receivers.push(potentialUser[0]);
+      }
+    });
+    console.debug(receivers);
+    // TODO add logic to prevent user from giving out more bread than they have 
+    // TODO add logic to prevent user from giving themselves bread
 
     if (receivers === []){
-      await say(`<@${message.user}> wants to give bread to someone!`);
+      await say(`<@${giver}> wants to give bread to someone!`);
+    } else {
+      receivers.forEach( function(user) {
+        // TODO deal with DB 
+        let userId = user['id'];
+        let username = user['name'];
+        await say(`${username} got bread from <@${giver}>!`)
+      
+       }
+      )
+
     }
-  }); 
+  }
+    catch (error) {
+      console.error(error);
+    }
+
+}); 
 
 
 // Listens to incoming messages that contain ":taco:"
@@ -69,20 +83,16 @@ app.message(':taco:', async ({ message, say }) => {
   await say(newMessage);
 }); 
 
-
-    
-// It looks like the action method has been depreciated and shortcut method is supposed to work here.    
-app.shortcut('button_click', async ({ body, ack, say }) => {
-    // Acknowledge the action
-    await ack();
-    await say(`<@${body.user.id}> clicked the button`);
-    });   
-
-
-// Determine if username is a actually user
-isUser = (username) => {
-  // TODO use RESTAPI call https://kwackjrpraylude.slack.com/api/users.list
-
+   
+// Get the user given the username
+// userList is an array of user objects
+getUser = (username, userList) => {
+  // TODO use RESTAPI call https://kwackjrpraylude.slack.com/api/users.list ?
+  let foundUser = userList.filter(function (user){
+    return user['name'] == username && user['is_bot'] == false;
+  });
+  // foundUser is an array
+  return foundUser;
 }
 
 
@@ -90,5 +100,5 @@ isUser = (username) => {
   // Start your app
   await app.start(process.env.PORT || 3000);
 
-  console.log('⚡️ Bolt app is running!');
+  console.debug('⚡️ Bolt app is running!');
 })();
