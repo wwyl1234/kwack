@@ -57,7 +57,7 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
         receivers.forEach( function(userId) {
           // TODO deal with DB 
          
-          resultMessage += `$<@${userId}> got bread from <@${giver}>!\n`;
+          resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
          }
         )
         await say(resultMessage);
