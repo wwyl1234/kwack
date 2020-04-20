@@ -42,15 +42,15 @@ app.message(':bread:', async ({ message, say }) => {
       let userList = res['members'];
       // figure out if username is actually a user 
       messageUserIds.forEach(function (userid){
-      let potentialUser = getUser(userid, userList);
-      if (potentialUser.length !== 0){
-        // There should be only one potential user
-        receivers.push(potentialUser[0]);
+        console.debug('userid:', userid);
+        if (isUser(userid, userList)){
+          receivers.push(userid);
         }
       });
-      console.debug(receivers);
-      if (receivers == []){
-        await say(`<@${giver}> wants to give bread to someone!`);
+
+      console.debug('receivers', receivers);
+      if (receivers.length == 0){
+        await say(`<@${giver}> wants to give bread to someone!\n`);
       } else {
         let resultMessage = `<@${giver}> attempts to give bread to someone!`;
         receivers.forEach( function(user) {
@@ -88,15 +88,15 @@ app.message(':taco:', async ({ message, say }) => {
 }); 
 
    
-// Get the user given the userId
+// Determine if user is actually a user, given the userId
 // userList is an array of user objects
-getUser = (userId, userList) => {
-  // TODO use RESTAPI call https://kwackjrpraylude.slack.com/api/users.list ?
+isUser = (userId, userList) => {
+
   let foundUser = userList.filter(function (user){
     return user['id'] == userId && user['is_bot'] == false;
   });
   // foundUser is an array
-  return foundUser;
+  return foundUser.length == 0 ? false : true;
 }
 
 
