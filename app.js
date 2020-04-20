@@ -20,7 +20,7 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
   let messageUserIds = [];
   try {
     // Parse for <@{userid}> and check if currentUser is in the message as well
-    let regex = /<@(.+)>/g
+    let regex = /<@(\w+)>/g
     let match = regex.exec(message.text);
     while (match != null) {
       messageUserIds.push(match[1]);
