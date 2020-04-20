@@ -13,7 +13,7 @@ app.event('app_home_opened', ({ event, say }) => {
 });
 
 // Listens to incoming messages that contain ":bread:"
-app.message('.*:bread:.*', async ({ message, say }) => {
+app.message(/.*:bread:.*/, async ({ message, say }) => {
   console.debug('message text:',message.text);
   let giver = message.user;
   let receivers = [];
