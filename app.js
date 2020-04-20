@@ -13,7 +13,7 @@ app.event('app_home_opened', ({ event, say }) => {
 });
 
 // Listens to incoming messages that contain ":bread:"
-app.message(':bread:', async ({ message, say, context }) => {
+app.message(':bread:', async ({ message, say }) => {
   console.debug(message.text);
   let giver = message.user;
   let receivers = [];
@@ -29,11 +29,15 @@ app.message(':bread:', async ({ message, say, context }) => {
     }
     console.debug(messageUserIds);
 
-    const result = app.client.users.list({
-      token: context.botToken
+    const usersPromise = app.client.users.list({
+      token: SLACK_BOT_TOKEN
+    });
+    let result = usersPromise.then(function(res) {
+      return res;
     });
 
-    console.debug(result);
+    console.debug('usersPromise:', usersPromise);
+    console.debug('result:',result);
     let userList = result['members'];
      // figure out if username is actually a user 
      messageUserIds.forEach(function (userid){
@@ -47,7 +51,7 @@ app.message(':bread:', async ({ message, say, context }) => {
     // TODO add logic to prevent user from giving out more bread than they have 
     // TODO add logic to prevent user from giving themselves bread
 
-    if (receivers === []){
+    if (receivers == []){
       await say(`<@${giver}> wants to give bread to someone!`);
     } else {
       let resultMessage = `<@${giver}> attempts to give bread to someone!`;
