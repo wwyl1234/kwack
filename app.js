@@ -17,17 +17,17 @@ app.message(':bread:', async ({ message, say, context }) => {
   console.debug(message.text);
   let giver = message.user;
   let receivers = [];
-  let messageUsernames = [];
+  let messageUserIds = [];
 
   try {
-    // Parse for <@{username}> and check if currentUser is in the message as well
+    // Parse for <@{userid}> and check if currentUser is in the message as well
     let regex = /<@([A-z]+)>/g
     let match = regex.exec(message.text);
     while (match != null) {
-      messageUsernames.push(match[1]);
+      messageUserIds.push(match[1]);
       match = regex.exec(message.text);
     }
-    console.debug(messageUsernames);
+    console.debug(messageUserIds);
 
     const result = app.client.users.list({
       token: context.botToken
@@ -36,8 +36,8 @@ app.message(':bread:', async ({ message, say, context }) => {
     console.debug(result);
     let userList = result['members'];
      // figure out if username is actually a user 
-    messageUsernames.forEach(function (username){
-      let potentialUser = getUser(username, userList);
+     messageUserIds.forEach(function (userid){
+      let potentialUser = getUser(userid, userList);
       if (potentialUser.length !== 0){
         // There should be only one potential user
         receivers.push(potentialUser[0]);
@@ -50,12 +50,11 @@ app.message(':bread:', async ({ message, say, context }) => {
     if (receivers === []){
       await say(`<@${giver}> wants to give bread to someone!`);
     } else {
-      let resultMessage = ''
+      let resultMessage = `<@${giver}> attempts to give bread to someone!`;
       receivers.forEach( function(user) {
         // TODO deal with DB 
         let userId = user['id'];
-        let username = user['name'];
-        resultMessage += `${username} got bread from <@${giver}>!\n`;
+        resultMessage += `$<@${userId}> got bread from <@${giver}>!\n`;
        }
       )
       await say(resultMessage);
@@ -84,12 +83,12 @@ app.message(':taco:', async ({ message, say }) => {
 }); 
 
    
-// Get the user given the username
+// Get the user given the userId
 // userList is an array of user objects
-getUser = (username, userList) => {
+getUser = (userId, userList) => {
   // TODO use RESTAPI call https://kwackjrpraylude.slack.com/api/users.list ?
   let foundUser = userList.filter(function (user){
-    return user['name'] == username && user['is_bot'] == false;
+    return user['id'] == userId && user['is_bot'] == false;
   });
   // foundUser is an array
   return foundUser;
