@@ -18,7 +18,6 @@ app.message(':bread:', async ({ message, say }) => {
   let giver = message.user;
   let receivers = [];
   let messageUserIds = [];
-
   try {
     // Parse for <@{userid}> and check if currentUser is in the message as well
     let regex = /<@([A-z]+)>/g
@@ -27,46 +26,48 @@ app.message(':bread:', async ({ message, say }) => {
       messageUserIds.push(match[1]);
       match = regex.exec(message.text);
     }
+
+    
+    // TODO add logic to prevent user from giving out more bread than they have 
+    // TODO add logic to prevent user from giving themselves bread
+
     console.debug(messageUserIds);
 
     const usersPromise = app.client.users.list({
       token: process.env.SLACK_BOT_TOKEN
     });
-    let result = usersPromise.then(function(res) {
-      return res;
-    });
-
-    console.debug('usersPromise:', usersPromise);
-    console.debug('result:',result);
-    let userList = result['members'];
-     // figure out if username is actually a user 
-     messageUserIds.forEach(function (userid){
+    let result = usersPromise.then(async function(res) {
+      console.debug(res);
+      // here use the result of users.list 
+      let userList = res['members'];
+      // figure out if username is actually a user 
+      messageUserIds.forEach(function (userid){
       let potentialUser = getUser(userid, userList);
       if (potentialUser.length !== 0){
         // There should be only one potential user
         receivers.push(potentialUser[0]);
+        }
+      });
+      console.debug(receivers);
+      if (receivers == []){
+        await say(`<@${giver}> wants to give bread to someone!`);
+      } else {
+        let resultMessage = `<@${giver}> attempts to give bread to someone!`;
+        receivers.forEach( function(user) {
+          // TODO deal with DB 
+          let userId = user['id'];
+          resultMessage += `$<@${userId}> got bread from <@${giver}>!\n`;
+         }
+        )
+        await say(resultMessage);
       }
     });
-    console.debug(receivers);
-    // TODO add logic to prevent user from giving out more bread than they have 
-    // TODO add logic to prevent user from giving themselves bread
 
-    if (receivers == []){
-      await say(`<@${giver}> wants to give bread to someone!`);
-    } else {
-      let resultMessage = `<@${giver}> attempts to give bread to someone!`;
-      receivers.forEach( function(user) {
-        // TODO deal with DB 
-        let userId = user['id'];
-        resultMessage += `$<@${userId}> got bread from <@${giver}>!\n`;
-       }
-      )
-      await say(resultMessage);
-    }
+    
   }
-    catch (error) {
-      console.error(error);
-    }
+  catch (error) {
+    console.error(error);
+  }
 
 }); 
 
