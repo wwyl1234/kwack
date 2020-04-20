@@ -30,7 +30,7 @@ app.message(':bread:', async ({ message, say }) => {
     console.debug(messageUserIds);
 
     const usersPromise = app.client.users.list({
-      token: SLACK_BOT_TOKEN
+      token: process.env.SLACK_BOT_TOKEN
     });
     let result = usersPromise.then(function(res) {
       return res;
