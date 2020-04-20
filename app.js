@@ -14,7 +14,7 @@ app.event('app_home_opened', ({ event, say }) => {
 
 // Listens to incoming messages that contain ":bread:"
 app.message(':bread:', async ({ message, say }) => {
-  console.debug(message.text);
+  console.debug('message text:',message.text);
   let giver = message.user;
   let receivers = [];
   let messageUserIds = [];
@@ -26,6 +26,7 @@ app.message(':bread:', async ({ message, say }) => {
       messageUserIds.push(match[1]);
       match = regex.exec(message.text);
     }
+    console.debug('messageUserIds:', messageUserIds);
 
     
     // TODO add logic to prevent user from giving out more bread than they have 
@@ -37,7 +38,7 @@ app.message(':bread:', async ({ message, say }) => {
       token: process.env.SLACK_BOT_TOKEN
     });
     let result = usersPromise.then(async function(res) {
-      console.debug(res);
+      //console.debug(res);
       // here use the result of users.list 
       let userList = res['members'];
       // figure out if username is actually a user 
@@ -96,6 +97,7 @@ isUser = (userId, userList) => {
     return user['id'] == userId && user['is_bot'] == false;
   });
   // foundUser is an array
+  console.debug('foundUSer:', foundUser)
   return foundUser.length == 0 ? false : true;
 }
 
