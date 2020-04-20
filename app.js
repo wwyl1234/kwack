@@ -51,12 +51,12 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
 
       console.debug('receivers', receivers);
       if (receivers.length == 0){
-        await say(`<@${giver}> wants to give bread to someone!\n`);
+        await say(`<@${giver}> wants to give bread to someone!`);
       } else {
-        let resultMessage = `<@${giver}> attempts to give bread to someone!`;
-        receivers.forEach( function(user) {
+        let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
+        receivers.forEach( function(userId) {
           // TODO deal with DB 
-          let userId = user['id'];
+         
           resultMessage += `$<@${userId}> got bread from <@${giver}>!\n`;
          }
         )
