@@ -1,10 +1,15 @@
 var mongoose = require('mongoose');
 let User = require('./model/user');
 
+
 class Database {
   constructor(){
     this._connect();
-    this.connection = mongoose.connection;
+    this.connection = mongoose.connections;
+    User.createCollection().then(function(collection) {
+      console.log('Collection is created!');
+    });
+    
   }
 
   _connect = async () => {
@@ -13,9 +18,6 @@ class Database {
         console.log(`Error connecting to database: ${err}`);
       } else {
         console.log(`Connected to database successfully.`)
-        User.createCollection().then(function(collection) {
-          console.log('Collection is created!');
-        });
       }
     });
   };
@@ -62,7 +64,7 @@ class Database {
 
       console.debug(users);
 
-      User.insertMany(users, function(err, docs) {
+      User.create(users, function(err, docs) {
       if (err) {
         console.error('Error has occured when inserting into database:' + err);
       } else {
