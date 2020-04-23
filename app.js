@@ -1,19 +1,20 @@
-const { App, LogLevel} = require('@slack/bolt');
+const { App} = require('@slack/bolt');
 const database = require('./database');
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  logLevel: LogLevel.DEBUG
 });
 
 
-
-
 // Says hello when app home is opened
-app.event('app_home_opened', ({ event, say }) => {  
+app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
+    const users = await getUsers();
+
+    console.log(`DB is empty?:`, database.isEmpty());
+    console.log(`DB users: ${users}`);
     say(`Hello <@${event.user}>!`);
 });
 
@@ -110,6 +111,16 @@ isUser = (userId, userList) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
+  const usersPromise = app.client.users.list({
+    token: process.env.SLACK_BOT_TOKEN
+  });
+  let result = usersPromise.then(async function(res) {
+    //console.debug(res);
+    // here use the result of users.list 
+    let usersList = res['members'];
+    await database.populate(usersList);
+    });
+  
 
   console.debug('⚡️ Bolt app is running!');
 })();
