@@ -129,7 +129,7 @@ class Database {
             console.log(`Successfully updated.`);
           }
         });
-        this.User.findOneAndUpdate({id: receiver}, {$inc : { breadRecieved: 1} }, {new: true} , (err, res) => {
+        this.User.findOneAndUpdate({id: receiver}, {$inc: {breadRecieved: 1} }, {new: true} , (err, res) => {
           if (err) {
             console.error(err);
           } else {
@@ -150,7 +150,7 @@ class Database {
 
   // Get all the users information
   getUsers = async() => {
-    let users = await this.User.find({}).exec();
+    let users = await this.User.find({}).sort({breadRecieved: -1}).exec();
     return users;
   };
 

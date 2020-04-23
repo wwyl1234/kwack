@@ -32,10 +32,7 @@ app.event('app_home_opened', async ({ event, say }) => {
     database.test();
 
 
-    const dbUsers = database.getUsers();
-    dbUsers.then(function(res) {
-     console.log(`DB users: ${res}`);
-      });
+    
     //const statePromise = database.isEmpty();
     //statePromise.then(function(res) {
      // console.log(`DB is empty?:`, res);
@@ -116,6 +113,22 @@ app.message(':taco:', async ({ message, say }) => {
   You can sing the rest of the song now :P!
   `
   await say(newMessage);
+}); 
+
+
+// Listens to incoming messages that contain "@kwack leaderboard"
+app.message('@kwack leaderboard', async ({ say }) => {
+  console.debug('DEBUG:@kwack leaderboard');
+  let dbUsers = database.getUsers();
+  dbUsers.then(async function(res) {
+    let newMessage= '';
+    console.log(`DB users: ${res}`);
+    for (let user in res){
+      newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
+    }
+    await say(newMessage);
+  });
+  
 }); 
 
    
