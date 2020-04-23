@@ -1,30 +1,38 @@
 var mongoose = require('mongoose');
-let User = require('./model/user');
 
+
+const userSchema = new mongoose.Schema({
+  id: {type: String, required: true},
+  breadRecieved: {type: Number, default: 0},
+  breadToGive: {type: Number, default: 5},
+  isLeader: Boolean
+});
 
 class Database {
   constructor(){
-    this._connect();
-    this.connection = mongoose.connections;
-    User.createCollection().then(function(collection) {
-      console.log('Collection is created!');
-    });
-    
-  }
-
-  _connect = async () => {
-    await mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
-      if (err) {
-        console.log(`Error connecting to database: ${err}`);
+    this.conn =  mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
+         if (err) {
+          console.log(`Error connecting to database: ${err}`);
       } else {
-        console.log(`Connected to database successfully.`)
+         console.log(`Connected to database successfully.`)
       }
     });
-  };
+    this.User = this.conn.model('User', userSchema, 'users');
+  }
+
+  //_connect = async () => {
+  //  var db = mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
+  //    if (err) {
+  //      console.log(`Error connecting to database: ${err}`);
+  //    } else {
+   //     console.log(`Connected to database successfully.`)
+  //    }
+  //  });
+ // };
 
   // Return true if database is empty. Otherwise, return false.
   isEmpty = async () => {
-    await User.count(function(err, count) {
+    await this.User.count(function(err, count) {
       if(err) {
         console.error(err);
         return;
@@ -64,7 +72,7 @@ class Database {
 
       console.debug(users);
 
-      User.create(users, function(err, docs) {
+      this.User.create(users, function(err, docs) {
       if (err) {
         console.error('Error has occured when inserting into database:' + err);
       } else {
@@ -88,7 +96,7 @@ class Database {
 
   // Add User
   addUser = (userId, done) => {
-    let user = new User({
+    let user = new this.User({
       id: userId,
       breadRecieved: 0,
       breadToGive: 5,
@@ -104,7 +112,7 @@ class Database {
 
   // Remove User
   removeUser = (userId, done) => {
-    User.remove({id: userId}, (err, data) => {
+    this.User.remove({id: userId}, (err, data) => {
       if (err) {
         return console.error(err);
       }
@@ -114,7 +122,7 @@ class Database {
 
   // Update User
   updateUser = (userId, updatedProperties, done) => {
-    User.findOneAndUpdate({id: userId}, updatedProperties, {new: true}, function(err, data){
+    this.User.findOneAndUpdate({id: userId}, updatedProperties, {new: true}, function(err, data){
       if (err) {
         return console.error(err);
       }
@@ -127,20 +135,20 @@ class Database {
   //only deal with bread 
   giveBread(giver, receiver){
     // Check if Giver has enough item
-    User.findOne({id: giver},`BreadToGive`, function(err, user){
+    this.User.findOne({id: giver},`BreadToGive`, function(err, user){
       if (err) {
         return console.error(err);
       } 
       // Note: Not checking if receiver exists
       if (user[`BreadToGive`] > 0 ){
-        User.findOneAndUpdate({id: giver}, {$inc : { breadToGive: -1} }, {new: true} , (err, res) => {
+        this.User.findOneAndUpdate({id: giver}, {$inc : { breadToGive: -1} }, {new: true} , (err, res) => {
           if (err) {
             console.error(err);
           } else {
             console.log(`Successfully updated.`);
           }
         });
-        User.findOneAndUpdate({id: receiver}, {$inc : { breadRecieved: 1} }, {new: true} , (err, res) => {
+        this.User.findOneAndUpdate({id: receiver}, {$inc : { breadRecieved: 1} }, {new: true} , (err, res) => {
           if (err) {
             console.error(err);
           } else {
@@ -155,7 +163,7 @@ class Database {
 
   // Get the user information
   getUser(userId){
-    User.findOne({id: userId}, (err, user) => {
+    this.User.findOne({id: userId}, (err, user) => {
       if (err){
         console.error(err);
       } else {
@@ -166,7 +174,7 @@ class Database {
 
   // Get all the users information
   getUsers = async() => {
-    await User.find({}, (err, users) => {
+    await this.User.find({}, (err, users) => {
       if (err){
         console.error(err);
         return;

@@ -14,6 +14,9 @@ const usersPromise = app.client.users.list({
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
+    console.debug('DB conn:', database.conn);
+    console.debug('DB User:', database.User);
+
    
     let result = usersPromise.then(async function(res) {
       console.debug(res);
