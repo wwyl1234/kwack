@@ -11,11 +11,15 @@ const app = new App({
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
-    const users = await database.getUsers();
-    const state = await database.isEmpty();
+    const usersPromise =  database.getUsers();
+    usersPromise.then(function(res) {
+      console.log(`DB users: ${res}`);
+      });
+    const statePromise = await database.isEmpty();
+    statePromise.then(function(res) {
+      console.log(`DB is empty?:`, res);
+    })
 
-    console.log(`DB is empty?:`, state);
-    console.log(`DB users: ${users}`);
     await say(`Hello <@${event.user}>!`);
 });
 
