@@ -34,10 +34,10 @@ class Database {
 
   // Populate the database given the userlist. Assumes database is empty. Does not assign leaders here.
   populate = async (usersList) => {
-    if (!this.isEmpty){
-      console.log('Database is not empty. Abort populating database.');
-      return;
-    }
+    //if (!this.isEmpty()){
+    //  console.log('Database is not empty. Abort populating database.');
+     // return;
+    //}
 
     // parse through usersList and only add actual user
     let realUsers = usersList.filter(function (user){
