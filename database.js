@@ -38,11 +38,13 @@ class Database {
     //  console.log('Database is not empty. Abort populating database.');
      // return;
     //}
+    console.debug(usersList);
 
     // parse through usersList and only add actual user
     let realUsers = usersList.filter(function (user){
       return user['is_bot'] == false;
     });
+    console.debug(realUsers);
 
     // form users to schema
     let users = realUsers.map(
@@ -54,11 +56,14 @@ class Database {
           isLeader: false
       }});
 
+      console.debug(users);
+
       User.collection.insertMany(users, function(err, docs) {
       if (err) {
         console.error('Error has occured when inserting into database:' + err);
       } else {
         console.log(`${docs.length} users were successfully added.`);
+        return docs;
       }
     });
   }

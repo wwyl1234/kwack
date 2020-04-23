@@ -16,7 +16,7 @@ app.event('app_home_opened', async ({ event, say }) => {
     database.test();
    
     let result = usersPromise.then(async function(res) {
-      //console.debug(res);
+      console.debug(res);
       // here use the result of users.list 
       let usersList = res['members'];
       database.populate(usersList)
@@ -29,14 +29,14 @@ app.event('app_home_opened', async ({ event, say }) => {
 
 
 
-    let users = database.getUsers();
-    users.then(function(res) {
-      console.log(`DB users: ${res}`);
-      });
-    const statePromise = database.isEmpty();
-    statePromise.then(function(res) {
-      console.log(`DB is empty?:`, res);
-    })
+    //let users = database.getUsers();
+    //users.then(function(res) {
+     // console.log(`DB users: ${res}`);
+     // });
+    //const statePromise = database.isEmpty();
+    //statePromise.then(function(res) {
+     // console.log(`DB is empty?:`, res);
+    //})
 
     await say(`Hello <@${event.user}>!`);
 });
