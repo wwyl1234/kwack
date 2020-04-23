@@ -1,4 +1,4 @@
-const { App} = require('@slack/bolt');
+const {App} = require('@slack/bolt');
 const database = require('./database');
 
 // Initializes your app with your bot token and signing secret
@@ -11,11 +11,11 @@ const app = new App({
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
-    const users = await getUsers();
+    const users = database.getUsers();
 
     console.log(`DB is empty?:`, database.isEmpty());
     console.log(`DB users: ${users}`);
-    say(`Hello <@${event.user}>!`);
+    await say(`Hello <@${event.user}>!`);
 });
 
 // Listens to incoming messages that contain ":bread:"
@@ -118,7 +118,7 @@ isUser = (userId, userList) => {
     //console.debug(res);
     // here use the result of users.list 
     let usersList = res['members'];
-    await database.populate(usersList);
+    //await database.populate(usersList);
     });
   
 
