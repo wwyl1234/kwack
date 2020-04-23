@@ -17,8 +17,8 @@ class Database {
   };
 
   // Return true if database is empty. Otherwise, return false.
-  isEmpty = () => {
-    User.count(function(err, count) {
+  isEmpty = async () => {
+    await User.count(function(err, count) {
       if(err) {
         console.error(err);
         return;
@@ -154,8 +154,8 @@ class Database {
   };
 
   // Get all the users information
-  getUsers(){
-    User.find({}, (err, users) => {
+  getUsers = async() => {
+    await User.find({}, (err, users) => {
       if (err){
         console.error(err);
       } else {
