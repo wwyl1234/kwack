@@ -7,7 +7,7 @@ class Database {
   }
 
   _connect = async () => {
-    await mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
+    await mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10 }, function(err, res){
       if (err) {
         console.log(`Error connecting to database: ${err}`);
       } else {
