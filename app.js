@@ -29,10 +29,10 @@ app.event('app_home_opened', async ({ event, say }) => {
 
 
 
-    //let users = database.getUsers();
-    //users.then(function(res) {
-     // console.log(`DB users: ${res}`);
-     // });
+    const dbUsers = database.getUsers();
+    dbUsers.then(function(res) {
+     console.log(`DB users: ${res}`);
+      });
     //const statePromise = database.isEmpty();
     //statePromise.then(function(res) {
      // console.log(`DB is empty?:`, res);

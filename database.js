@@ -4,6 +4,7 @@ let User = require('./model/user');
 class Database {
   constructor(){
     this._connect();
+    this.connection = mongoose.connection;
   }
 
   _connect = async () => {
@@ -12,6 +13,9 @@ class Database {
         console.log(`Error connecting to database: ${err}`);
       } else {
         console.log(`Connected to database successfully.`)
+        User.createCollection().then(function(collection) {
+          console.log('Collection is created!');
+        });
       }
     });
   };
