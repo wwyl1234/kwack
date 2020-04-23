@@ -7,13 +7,14 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
+const usersPromise = app.client.users.list({
+  token: process.env.SLACK_BOT_TOKEN
+});
 
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
-    const usersPromise = app.client.users.list({
-      token: process.env.SLACK_BOT_TOKEN
-    });
+   
     let result = usersPromise.then(async function(res) {
       //console.debug(res);
       // here use the result of users.list 
@@ -28,8 +29,8 @@ app.event('app_home_opened', async ({ event, say }) => {
 
 
 
-    const usersPromise = database.getUsers();
-    usersPromise.then(function(res) {
+    let users = database.getUsers();
+    users.then(function(res) {
       console.log(`DB users: ${res}`);
       });
     const statePromise = database.isEmpty();
@@ -62,9 +63,7 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
 
     console.debug(messageUserIds);
 
-    const usersPromise = app.client.users.list({
-      token: process.env.SLACK_BOT_TOKEN
-    });
+    
     let result = usersPromise.then(async function(res) {
       //console.debug(res);
       // here use the result of users.list 
@@ -133,9 +132,7 @@ isUser = (userId, userList) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
-  const usersPromise = app.client.users.list({
-    token: process.env.SLACK_BOT_TOKEN
-  });
+  
  
   
 
