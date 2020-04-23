@@ -58,7 +58,7 @@ class Database {
 
       console.debug(users);
 
-      User.collection.insertMany(users, function(err, docs) {
+      User.insertMany(users, function(err, docs) {
       if (err) {
         console.error('Error has occured when inserting into database:' + err);
       } else {
@@ -163,11 +163,11 @@ class Database {
     await User.find({}, (err, users) => {
       if (err){
         console.error(err);
+        return;
       } else {
         return users;
       }
     })
-
   };
 
   // test function for my sanity
