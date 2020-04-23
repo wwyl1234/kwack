@@ -1,4 +1,5 @@
 const { App, LogLevel} = require('@slack/bolt');
+const database = require('./database');
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -7,8 +8,12 @@ const app = new App({
   logLevel: LogLevel.DEBUG
 });
 
+
+
+
 // Says hello when app home is opened
 app.event('app_home_opened', ({ event, say }) => {  
+    database.test();
     say(`Hello <@${event.user}>!`);
 });
 
