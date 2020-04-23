@@ -11,25 +11,25 @@ const usersPromise = app.client.users.list({
   token: process.env.SLACK_BOT_TOKEN
 });
 
+
+
+populateDatabase = () => {
+  let result = usersPromise.then(async function(res) {
+    console.debug(res);
+    // here use the result of users.list 
+    let usersList = res['members'];
+    database.populate(usersList)
+    .then(
+      (res) => {
+        console.log('debug:', res);
+      }
+    );
+    });
+}
+
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
     database.test();
-    console.debug('DB conn:', database.conn);
-    console.debug('DB User:', database.User);
-
-   
-    let result = usersPromise.then(async function(res) {
-      console.debug(res);
-      // here use the result of users.list 
-      let usersList = res['members'];
-      database.populate(usersList)
-      .then(
-        (res) => {
-          console.log('debug:', res);
-        }
-      );
-      });
-
 
 
     const dbUsers = database.getUsers();

@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 
-
 const userSchema = new mongoose.Schema({
   id: {type: String, required: true},
   breadRecieved: {type: Number, default: 0},
@@ -10,7 +9,8 @@ const userSchema = new mongoose.Schema({
 
 class Database {
   constructor(){
-    this.conn =  mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
+    this.conn =  mongoose.createConnection(
+      process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true, useUnifiedTopology: true }, function(err, res){
          if (err) {
           console.log(`Error connecting to database: ${err}`);
       } else {
@@ -20,30 +20,14 @@ class Database {
     this.User = this.conn.model('User', userSchema, 'users');
   }
 
-  //_connect = async () => {
-  //  var db = mongoose.createConnection(process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true  }, function(err, res){
-  //    if (err) {
-  //      console.log(`Error connecting to database: ${err}`);
-  //    } else {
-   //     console.log(`Connected to database successfully.`)
-  //    }
-  //  });
- // };
-
   // Return true if database is empty. Otherwise, return false.
   isEmpty = async () => {
-    await this.User.count(function(err, count) {
-      if(err) {
-        console.error(err);
-        return;
-      }
-      if( count == 0) {
-          return true;
-      }
-      else {
-         return false;
-      }
-    });
+    let count = await this.User.count().exec();
+    if ( count == 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // Populate the database given the userlist. Assumes database is empty. Does not assign leaders here.
@@ -58,7 +42,7 @@ class Database {
     let realUsers = usersList.filter(function (user){
       return user['is_bot'] == false;
     });
-    console.debug(realUsers);
+  
 
     // form users to schema
     let users = realUsers.map(
@@ -70,14 +54,11 @@ class Database {
           isLeader: false
       }});
 
-      console.debug(users);
-
       this.User.create(users, function(err, docs) {
       if (err) {
         console.error('Error has occured when inserting into database:' + err);
       } else {
         console.log(`${docs.length} users were successfully added.`);
-        return docs;
       }
     });
   }
@@ -162,26 +143,15 @@ class Database {
   }
 
   // Get the user information
-  getUser(userId){
-    this.User.findOne({id: userId}, (err, user) => {
-      if (err){
-        console.error(err);
-      } else {
-        return user;
-      }
-    })
+  getUser = async (userId) => {
+    let user = await this.User.findOne({id: userId}).exec();
+    return user;
   };
 
   // Get all the users information
   getUsers = async() => {
-    await this.User.find({}, (err, users) => {
-      if (err){
-        console.error(err);
-        return;
-      } else {
-        return users;
-      }
-    })
+    let users = await this.User.find({}).exec();
+    return users;
   };
 
   // test function for my sanity
