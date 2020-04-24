@@ -11,7 +11,6 @@ const usersPromise = app.client.users.list({
   token: process.env.SLACK_BOT_TOKEN
 });
 
-
 // This needs to be before TIMERID or be part of the definition
 // Update All Users at the given hour and given minute (GMT -4)
 updateAllUsers = (hour, minute) => {
@@ -26,7 +25,6 @@ updateAllUsers = (hour, minute) => {
       .then((res) => console.log(res));
   }
 }
-
 
 const TIMERID = setInterval(updateAllUsers, 60000, 9, 42);
 
@@ -48,15 +46,6 @@ populateDatabase = () => {
 
 // Says hello when app home is opened
 app.event('app_home_opened', async ({ event, say }) => {  
-    database.test();
-
-
-    
-    //const statePromise = database.isEmpty();
-    //statePromise.then(function(res) {
-     // console.log(`DB is empty?:`, res);
-    //})
-
     await say(`Hello <@${event.user}>!`);
 });
 
@@ -170,6 +159,16 @@ app.event('app_mention', async ({event, say }) => {
       say(newMessage);
     });
   }
+  if (event.text.includes('help') ){
+    let message = `
+      To get help, type: '@kwack help' \n
+      To give bread to another user, type:  ':bread: <username>'\n
+      To see the leaderboard, type: '@kwack leaderboard' \n
+      `
+    await say(message);
+  }
+
+
 }); 
 
    

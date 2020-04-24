@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
 });
 
 class Database {
+
   constructor(){
     this.conn =  mongoose.createConnection(
       process.env.MONGODB_URI, { poolSize: 10, useNewUrlParser: true, useUnifiedTopology: true }, function(err, res){
@@ -32,41 +33,37 @@ class Database {
 
   // Populate the database given the userlist. Assumes database is empty. Does not assign leaders here.
   populate = async (usersList) => {
-    //if (!this.isEmpty()){
-    //  console.log('Database is not empty. Abort populating database.');
-     // return;
-    //}
-    console.debug(usersList);
-
-    // parse through usersList and only add actual user
-    let realUsers = usersList.filter(function (user){
-      return user['is_bot'] == false;
-    });
-  
-
-    // form users to schema
-    let users = realUsers.map(
-      (user)=> {
-        return {
-          id: user['id'],
-          breadRecieved: 0,
-          breadToGive: 5,
-          isLeader: false
-      }});
-
-      this.User.create(users, function(err, docs) {
-      if (err) {
-        console.error('Error has occured when inserting into database:' + err);
+    let isEmptyPromise = await this.isEmpty();
+    isEmptyPromise.then(async (res) => {
+      console.log(res);
+      if (!res) {
+        console.log('Database is not empty. Abort populating database.');
+        return;
       } else {
-        console.log(`${docs.length} users were successfully added.`);
-      }
+        console.debug(usersList);
+
+        // parse through usersList and only add actual user
+        let realUsers = usersList.filter(function (user){
+          return user['is_bot'] == false;
+        });
+      
+        // form users to schema
+        let users = realUsers.map(
+          (user)=> {
+            return {
+              id: user['id'],
+              breadRecieved: 0,
+              breadToGive: 5,
+              isLeader: false
+          }});
+          let result = await this.User.create(users).exec() 
+          return result;
+        }
     });
   }
 
-
-
   // Determine if user is actually a user, given the userId
-  // userList is an array of user objects
+  // userList is an array of user objects from the slack API
   isUser = (userId, userList) => {
     let foundUser = userList.filter(function (user){
       return user['id'] == userId && user['is_bot'] == false;
@@ -75,30 +72,30 @@ class Database {
     return foundUser.length == 0 ? false : true;
   }
 
-  // Add User
-  addUser = (userId, done) => {
-    let user = new this.User({
+  // Add User 
+  addUser = async (userId) => {
+    let user = {
       id: userId,
       breadRecieved: 0,
       breadToGive: 5,
       isLeader: false
-    });
-    user.save((err, data) => {
-      if (err) {
-        return console.error(err);
-      }
-      done(null, data);
-    });
+    };
+
+    let existingUser = await this.User.findOne({id: userId}).exec();
+    if (!existingUser){
+      let result = await this.User.create(user).exec();
+      console.log('Creating User.')
+      return result;
+    } else {
+      console.log(`User already exists in database: ${userId}`)
+      return existingUser;
+    }
   };
 
   // Remove User
-  removeUser = (userId, done) => {
-    this.User.remove({id: userId}, (err, data) => {
-      if (err) {
-        return console.error(err);
-      }
-      done(null, data);
-    })
+  removeUser = async (userId) => {
+    let result = await this.User.remove({id: userId}).exec();
+    return result;
   };
 
   // Update User
@@ -129,7 +126,6 @@ class Database {
   test(){
     console.debug(`This test method words`);
   };
-
 };
 
 
