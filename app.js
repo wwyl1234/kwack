@@ -91,7 +91,10 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
         let giverData =  database.getUser(giver);
         giverData.then(async function(res){
           console.debug(`giver:`, res);
-          if (res[0].breadToGive < receivers.length) {
+          console.log(`length: ${res.length}`);
+          console.log(`type: ${typeof res}`);
+          
+          if (res.breadToGive < receivers.length) {
             resultMessage += `<@${giver}> does not have enough bread to give.`
           } else {
             let numBread = -1 * receivers.length;
