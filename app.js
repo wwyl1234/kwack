@@ -12,6 +12,23 @@ const usersPromise = app.client.users.list({
 });
 
 
+// This needs to be before TIMERID or be part of the definition
+// Update All Users at the given hour and given minute (GMT -4)
+updateAllUsers = (hour, minute) => {
+  // Based on local Canada time
+  let date = new Date().toLocaleString('en-CA', {timeZone: 'America/Toronto'});
+  console.debug(date);
+  if (date.getHours() == hour && date.getMinutes() == minute) {
+    console.debug(date, 'update has been called');
+    database.updateAllUsers({breadToGive: 5})
+      .then((res) => console.log(res));
+  }
+}
+
+
+const TIMERID = setInterval(updateAllUsers, 60000, 9, 20);
+
+
 
 populateDatabase = () => {
   let result = usersPromise.then(async function(res) {

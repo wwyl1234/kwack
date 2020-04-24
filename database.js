@@ -107,35 +107,11 @@ class Database {
     return result;
   };
 
-  // Give item to another user where itemName is name of the item and giver and receiver are user IDs.
-  //only deal with bread 
-  giveBread(giver, receiver){
-    // Check if Giver has enough item
-    this.User.findOne({id: giver},`BreadToGive`, function(err, user){
-      if (err) {
-        return console.error(err);
-      } 
-      // Note: Not checking if receiver exists
-      if (user[`BreadToGive`] > 0 ){
-        this.User.findOneAndUpdate({id: giver}, {$inc : { breadToGive: -1} }, {new: true} , (err, res) => {
-          if (err) {
-            console.error(err);
-          } else {
-            console.log(`Successfully updated.`);
-          }
-        });
-        this.User.findOneAndUpdate({id: receiver}, {$inc: {breadRecieved: 1} }, {new: true} , (err, res) => {
-          if (err) {
-            console.error(err);
-          } else {
-            console.log(`Successfully updated.`);
-          }
-        });
-      } else {
-        console.log(`Fail to give Bread.`);
-      }
-    })
-  }
+   // Update All Users
+   updateAllUsers = async (updatedProperties) => {
+    let result = await this.User.findAndUpdate({}, updatedProperties, {new: true}).exec();   
+    return result;
+  };
 
   // Get the user information
   getUser = async (userId) => {
