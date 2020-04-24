@@ -16,9 +16,11 @@ const usersPromise = app.client.users.list({
 // Update All Users at the given hour and given minute (GMT -4)
 updateAllUsers = (hour, minute) => {
   // Based on local Canada time
-  let date = new Date().toLocaleString('en-CA', {timeZone: 'America/Toronto'});
+  let date = new Date().toLocaleString('en-CA', {hour12: false, timeZone: 'America/Toronto'});
   console.debug(date);
-  if (date.getHours() == hour && date.getMinutes() == minute) {
+  let dateArray = date.split(',');
+  let timeArray = dateArray[1].split (':');
+  if (timeArray[0] == hour && timeArray[1] == minute) {
     console.debug(date, 'update has been called');
     database.updateAllUsers({breadToGive: 5})
       .then((res) => console.log(res));
@@ -26,7 +28,7 @@ updateAllUsers = (hour, minute) => {
 }
 
 
-const TIMERID = setInterval(updateAllUsers, 60000, 9, 20);
+const TIMERID = setInterval(updateAllUsers, 60000, 9, 35);
 
 
 
