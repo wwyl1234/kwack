@@ -43,7 +43,7 @@ app.event('app_home_opened', async ({ event, say }) => {
 
 // Listens to incoming messages that contain ":bread:"
 app.message(/.*:bread:.*/, async ({ message, say }) => {
-  console.debug('message text:',message.text);
+  console.debug('message text:', message.text);
   let giver = message.user;
   let receivers = [];
   let messageUserIds = [];
@@ -51,19 +51,25 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
     // Parse for <@{userid}> and check if currentUser is in the message as well
     let regex = /<@(\w+)>/g
     let match = regex.exec(message.text);
+    let mentionSelf = false;
     while (match != null) {
-      messageUserIds.push(match[1]);
+      let userId = match[1]
+      if (userId == giver){
+        mentionSelf = true;
+      }
+      messageUserIds.push(userId);
       match = regex.exec(message.text);
     }
     console.debug('messageUserIds:', messageUserIds);
 
-    
-    // TODO add logic to prevent user from giving out more bread than they have 
-    // TODO add logic to prevent user from giving themselves bread
+  // to prevent user from giving themselves bread
+   if (mentionSelf === true){
+     await say(`Stop trying to cheat the system. You cannot give bread to yourself!`)
+     break;
+   } 
 
     console.debug(messageUserIds);
 
-    
     let result = usersPromise.then(async function(res) {
       //console.debug(res);
       // here use the result of users.list 
@@ -81,17 +87,26 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
         await say(`<@${giver}> wants to give bread to someone!`);
       } else {
         let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
-        receivers.forEach( function(userId) {
-          // TODO deal with DB 
-         
-          resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
-         }
-        )
-        await say(resultMessage);
+        // to prevent user from giving out more bread than they have 
+        let giverData =  database.getUser(giver);
+        giverData.then(function(res){
+          console.debug(`giver:`, res);
+          if (res[0].breadToGive < receivers.length) {
+            resultMessage += `<@${giver}> does not have enough bread to give.`
+            await say(resultMessage);
+            return;
+          }
+          let numBread = -1 * receivers.length;
+          database.updateUser(giver, {$inc: {breadToGive: numBread}}, done);
+          receivers.forEach(function(userId) {
+            database.updateUser(userId, {$inc: {breadRecieved: 1}}, done);
+            resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
+          });
+            await say(resultMessage);
+        })
       }
     });
-
-    
+     
   }
   catch (error) {
     console.error(error);
