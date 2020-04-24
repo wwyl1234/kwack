@@ -125,6 +125,8 @@ app.event('app_mention', async ({event, say }) => {
     dbUsers.then(function(res) {
       let newMessage= '';
       console.log(`DB users: ${res}`);
+      console.log(`length: ${res.length}`);
+      console.log(`type: ${typeof res}`);
       for (let user in res){
         newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
       }

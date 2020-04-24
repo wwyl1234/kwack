@@ -150,7 +150,7 @@ class Database {
 
   // Get all the users information
   getUsers = async() => {
-    let users = await this.User.find({}).sort({breadRecieved: -1}).exec();
+    let users = await this.User.find({}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
     return users;
   };
 
