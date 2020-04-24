@@ -109,7 +109,7 @@ class Database {
 
    // Update All Users
    updateAllUsers = async (updatedProperties) => {
-    let result = await this.User.findAndUpdate({}, updatedProperties, {new: true}).exec();   
+    let result = await this.User.updateMany({}, updatedProperties, {new: true}).exec();   
     return result;
   };
 

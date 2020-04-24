@@ -28,7 +28,7 @@ updateAllUsers = (hour, minute) => {
 }
 
 
-const TIMERID = setInterval(updateAllUsers, 60000, 9, 35);
+const TIMERID = setInterval(updateAllUsers, 60000, 9, 42);
 
 
 
