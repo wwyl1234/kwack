@@ -89,20 +89,19 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
         let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
         // to prevent user from giving out more bread than they have 
         let giverData =  database.getUser(giver);
-        giverData.then(function(res){
+        giverData.then(async function(res){
           console.debug(`giver:`, res);
           if (res[0].breadToGive < receivers.length) {
             resultMessage += `<@${giver}> does not have enough bread to give.`
-            await say(resultMessage);
-            return;
-          }
-          let numBread = -1 * receivers.length;
-          database.updateUser(giver, {$inc: {breadToGive: numBread}}, done);
-          receivers.forEach(function(userId) {
-            database.updateUser(userId, {$inc: {breadRecieved: 1}}, done);
-            resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
-          });
-            await say(resultMessage);
+          } else {
+            let numBread = -1 * receivers.length;
+            database.updateUser(giver, {$inc: {breadToGive: numBread}}, done);
+            receivers.forEach(function(userId) {
+              database.updateUser(userId, {$inc: {breadRecieved: 1}}, done);
+              resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
+              });
+            }
+          await say(resultMessage);
         })
       }
     });
