@@ -151,7 +151,7 @@ app.event('app_mention', async ({event, say }) => {
   if (event.text.includes('info')){
     database.getUser(event.user)
       .then(async (res) => {
-        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} of bread!`;
+        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} bread!`;
         await say(message);
       } 
     );
