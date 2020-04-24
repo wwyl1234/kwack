@@ -16,11 +16,10 @@ const usersPromise = app.client.users.list({
 updateAllUsers = (hour, minute) => {
   // Based on local Canada time
   let date = new Date().toLocaleString('en-CA', {hour12: false, timeZone: 'America/Toronto'});
-  console.debug(date);
   let dateArray = date.split(',');
   let timeArray = dateArray[1].split (':');
   if (timeArray[0] == hour && timeArray[1] == minute) {
-    console.debug(date, 'update has been called');
+    console.log(date, 'update has been called');
     database.updateAllUsers({breadToGive: 5})
       .then((res) => console.log(res));
   }
@@ -28,7 +27,11 @@ updateAllUsers = (hour, minute) => {
 
 const TIMERID = setInterval(updateAllUsers, 60000, 9, 42);
 
-
+const HELPMSG =`
+To get help, type: '@kwack help' \n
+To give bread to another user, type:  ':bread: <username>'\n
+To see the leaderboard, type: '@kwack leaderboard' \n
+`
 
 populateDatabase = () => {
   let result = usersPromise.then(async function(res) {
@@ -36,11 +39,7 @@ populateDatabase = () => {
     // here use the result of users.list 
     let usersList = res['members'];
     database.populate(usersList)
-    .then(
-      (res) => {
-        console.log('debug:', res);
-      }
-    );
+    .then((res) => console.log(res));
     });
 }
 
@@ -51,7 +50,6 @@ app.event('app_home_opened', async ({ event, say }) => {
 
 // Listens to incoming messages that contain ":bread:"
 app.message(/.*:bread:.*/, async ({ message, say }) => {
-  console.debug('message text:', message.text);
   let giver = message.user;
   let receivers = [];
   let messageUserIds = [];
@@ -68,29 +66,21 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
       messageUserIds.push(userId);
       match = regex.exec(message.text);
     }
-    console.debug('messageUserIds:', messageUserIds);
 
-  // to prevent user from giving themselves bread
-   if (mentionSelf === true){
-     await say(`Stop trying to cheat the system. You cannot give bread to yourself!`)
-     return;
-   } 
-
-    console.debug(messageUserIds);
-
+    // to prevent user from giving themselves bread
+    if (mentionSelf === true){
+      await say(`Stop trying to cheat the system. You cannot give bread to yourself!`)
+      return;
+    } 
     let result = usersPromise.then(async function(res) {
-      //console.debug(res);
-      // here use the result of users.list 
       let userList = res['members'];
       // figure out if username is actually a user 
       messageUserIds.forEach(function (userid){
-        console.debug('userid:', userid);
         if (isUser(userid, userList)){
           receivers.push(userid);
         }
       });
 
-      console.debug('receivers', receivers);
       if (receivers.length == 0){
         await say(`<@${giver}> wants to give bread to someone!`);
       } else {
@@ -107,7 +97,7 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
               .then((res) => console.log(res));
             receivers.forEach(function(userId) {
               database.updateUser(userId, {$inc: {breadRecieved: 1}})
-                .then((res) => console.log(res));;
+                .then((res) => console.log(res));
               resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
               });
             }
@@ -140,17 +130,12 @@ app.message(':taco:', async ({ message, say }) => {
 }); 
 
 
-// Listens to incoming messages from app mention 
+// Listens to incoming messages from app mention event
 app.event('app_mention', async ({event, say }) => {
-  console.debug('DEBUG:@kwack');
   if (event.text.includes('leaderboard') ){
-    console.debug('DEBUG:@kwack leaderboard');
     let dbUsers = database.getUsers();
     dbUsers.then(function(res) {
       let newMessage= '';
-      console.log(`DB users: ${res}`);
-      console.log(`length: ${res.length}`);
-      console.log(`type: ${typeof res}`);
       for (let i = 0; i < res.length; i++){
         let user = res[i];
         console.log(user, user['id'], user['breadRecieved']);
@@ -160,18 +145,30 @@ app.event('app_mention', async ({event, say }) => {
     });
   }
   if (event.text.includes('help') ){
-    let message = `
-      To get help, type: '@kwack help' \n
-      To give bread to another user, type:  ':bread: <username>'\n
-      To see the leaderboard, type: '@kwack leaderboard' \n
-      `
-    await say(message);
+    await say(HELPMSG);
   }
 
 
 }); 
 
-   
+// Listen to messages from the app's home
+app.event('message.app_home', async({event, say}) => {
+  console.debug('testing');
+  let user = event.user; 
+  if (event.text.includes('help')){
+    await say(HELPMSG);
+  }
+  
+  if (event.text.includes('info')){
+    database.getUser(user)
+      .then(async (res) => {
+        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} of bread!`;
+        await say(message);
+      } 
+    );
+  }
+});
+
 // Determine if user is actually a user, given the userId
 // userList is an array of user objects
 isUser = (userId, userList) => {
@@ -180,7 +177,6 @@ isUser = (userId, userList) => {
     return user['id'] == userId && user['is_bot'] == false;
   });
   // foundUser is an array
-  console.debug('foundUSer:', foundUser)
   return foundUser.length == 0 ? false : true;
 }
 
@@ -188,9 +184,5 @@ isUser = (userId, userList) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
-  
- 
-  
-
   console.debug('⚡️ Bolt app is running!');
 })();
