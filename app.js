@@ -65,7 +65,7 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
   // to prevent user from giving themselves bread
    if (mentionSelf === true){
      await say(`Stop trying to cheat the system. You cannot give bread to yourself!`)
-     break;
+     return;
    } 
 
     console.debug(messageUserIds);
