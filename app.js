@@ -31,6 +31,7 @@ const HELPMSG =`
 To get help, type: '@kwack help' \n
 To give bread to another user, type:  ':bread: <username>'\n
 To see the leaderboard, type: '@kwack leaderboard' \n
+To get info about yourself, type: '@kwack info' \n
 `
 
 populateDatabase = () => {
@@ -147,18 +148,6 @@ app.event('app_mention', async ({event, say }) => {
   if (event.text.includes('help') ){
     await say(HELPMSG);
   }
-
-
-}); 
-
-// Listen to messages from the app's home
-app.event('message.app_home', async({event, say}) => {
-  console.debug('testing');
-  let user = event.user; 
-  if (event.text.includes('help')){
-    await say(HELPMSG);
-  }
-  
   if (event.text.includes('info')){
     database.getUser(user)
       .then(async (res) => {
@@ -167,7 +156,7 @@ app.event('message.app_home', async({event, say}) => {
       } 
     );
   }
-});
+}); 
 
 // Determine if user is actually a user, given the userId
 // userList is an array of user objects
