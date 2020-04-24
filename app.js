@@ -127,8 +127,10 @@ app.event('app_mention', async ({event, say }) => {
       console.log(`DB users: ${res}`);
       console.log(`length: ${res.length}`);
       console.log(`type: ${typeof res}`);
-      for (let user in res){
-        newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
+      for (let i = 0; i < res.length; i++){
+        let user = res[i];
+        console.log(user, user['id'], user['breadRecieved']);
+        newMessage += `<@${user['id']}> has total number of bread: ${user['breadRecieved']}. \n`
       }
       say(newMessage);
     });
