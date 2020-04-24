@@ -122,13 +122,13 @@ app.event('app_mention', async ({event, say }) => {
   if (event.text.includes('leaderboard') ){
     console.debug('DEBUG:@kwack leaderboard');
     let dbUsers = database.getUsers();
-    dbUsers.then(async function(res) {
+    dbUsers.then(function(res) {
       let newMessage= '';
       console.log(`DB users: ${res}`);
       for (let user in res){
         newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
       }
-      await say(newMessage);
+      say(newMessage);
     });
   }
 }); 
