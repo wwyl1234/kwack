@@ -116,19 +116,21 @@ app.message(':taco:', async ({ message, say }) => {
 }); 
 
 
-// Listens to incoming messages that contain "@kwack leaderboard"
-app.message('@kwack leaderboard', async ({ say }) => {
-  console.debug('DEBUG:@kwack leaderboard');
-  let dbUsers = database.getUsers();
-  dbUsers.then(async function(res) {
-    let newMessage= '';
-    console.log(`DB users: ${res}`);
-    for (let user in res){
-      newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
-    }
-    await say(newMessage);
-  });
-  
+// Listens to incoming messages from app mention 
+app.event('app_mention', async ({event, say }) => {
+  console.debug('DEBUG:@kwack');
+  if (event.text.includes('leaderboard') ){
+    console.debug('DEBUG:@kwack leaderboard');
+    let dbUsers = database.getUsers();
+    dbUsers.then(async function(res) {
+      let newMessage= '';
+      console.log(`DB users: ${res}`);
+      for (let user in res){
+        newMessage += `<@${user.id}> has total number of bread: ${user.breadRecieved}. \n`
+      }
+      await say(newMessage);
+    });
+  }
 }); 
 
    
