@@ -102,14 +102,9 @@ class Database {
   };
 
   // Update User
-  updateUser = (userId, updatedProperties, done) => {
-    this.User.findOneAndUpdate({id: userId}, updatedProperties, {new: true}, function(err, data){
-      if (err) {
-        return console.error(err);
-      }
-      done(null, data);
-      }     
-    )
+  updateUser = async (userId, updatedProperties) => {
+    let result = await this.User.findOneAndUpdate({id: userId}, updatedProperties, {new: true}).exec();   
+    return result;
   };
 
   // Give item to another user where itemName is name of the item and giver and receiver are user IDs.

@@ -91,16 +91,15 @@ app.message(/.*:bread:.*/, async ({ message, say }) => {
         let giverData =  database.getUser(giver);
         giverData.then(async function(res){
           console.debug(`giver:`, res);
-          console.log(`length: ${res.length}`);
-          console.log(`type: ${typeof res}`);
-          
           if (res.breadToGive < receivers.length) {
             resultMessage += `<@${giver}> does not have enough bread to give.`
           } else {
             let numBread = -1 * receivers.length;
-            database.updateUser(giver, {$inc: {breadToGive: numBread}}, done);
+            database.updateUser(giver, {$inc: {breadToGive: numBread}})
+              .then((res) => console.log(res));
             receivers.forEach(function(userId) {
-              database.updateUser(userId, {$inc: {breadRecieved: 1}}, done);
+              database.updateUser(userId, {$inc: {breadRecieved: 1}})
+                .then((res) => console.log(res));;
               resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
               });
             }
