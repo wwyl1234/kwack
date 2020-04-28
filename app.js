@@ -11,13 +11,16 @@ const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
 const  {WebClient}  = require('@slack/web-api')
 const webClient = new WebClient(process.env.SLACK_BOT_TOKEN)
 
+
+restapi.use('/slack/events', slackEvents.expressMiddleware())
+
 restapi.use(bodyParser.json())
 restapi.use(
     bodyParser.urlencoded({
     extended: true,
   })
 )
-restapi.use('/slack/events', slackEvents.expressMiddleware())
+
 
 // Initializes your app with your bot token and signing secret
 //const app = new App({
@@ -72,9 +75,15 @@ say = (message, channel) => {
 
 // Says hello when app home is opened
 slackEvents.on('app_home_opened', async ({ event}) => { 
-  let message =  `Hello <@${event.user}>!`
+  try {
+    let message =  `Hello <@${event.user}>!`
     console.log('app_home_opened event')
+    console.log("in this channel", event.channel)
     await say(message, event.channel);
+    
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 
