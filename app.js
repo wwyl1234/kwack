@@ -65,7 +65,7 @@ populateDatabase = () => {
     });
 }
 
-
+// Use Web Client to send message back to Slack
 say = (message, channel) => {
   webClient.chat.postMessage({
     text: message,
@@ -73,6 +73,10 @@ say = (message, channel) => {
   });
 }
 
+//=========================================================
+// Slack Events
+
+// Event handler for app_home_opened
 // Says hello when app home is opened
 slackEvents.on('app_home_opened', async (event) => { 
   console.log(event);
@@ -87,7 +91,36 @@ slackEvents.on('app_home_opened', async (event) => {
   }
 });
 
+// Event handler for app_mention
+slackEvents.on('app_mention', async (event) => {
+  console.log(event);
+  if (event.text.includes('leaderboard') ){
+    let dbUsers = database.getUsers();
+    dbUsers.then(function(res) {
+      let newMessage= '';
+      for (let i = 0; i < res.length; i++){
+        let user = res[i];
+        console.log(user, user['id'], user['breadRecieved']);
+        newMessage += `<@${user['id']}> has total number of bread: ${user['breadRecieved']}. \n`
+      }
+      say(newMessage, event.channel);
+    });
+  }
+  if (event.text.includes('help') ){
+    await say(HELPMSG, event.channel);
+  }
+  if (event.text.includes('info')){
+    database.getUser(event.user)
+      .then(async (res) => {
+        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} bread!`;
+        await say(message, event.channel);
+      } 
+    );
+  }
+}); 
 
+//==============================================================
+// Slack messages
 
 // Listens to incoming messages that contain ":bread:"
 //app.message(/.*:bread:.*/, async ({ message, say }) => {
@@ -174,32 +207,7 @@ app.message(':taco:', async ({ message, say }) => {
 */
 
 
-// Listens to incoming messages from app mention event
-slackEvents.on('app_mention', async ({event}) => {
-  if (event.text.includes('leaderboard') ){
-    let dbUsers = database.getUsers();
-    dbUsers.then(function(res) {
-      let newMessage= '';
-      for (let i = 0; i < res.length; i++){
-        let user = res[i];
-        console.log(user, user['id'], user['breadRecieved']);
-        newMessage += `<@${user['id']}> has total number of bread: ${user['breadRecieved']}. \n`
-      }
-      say(newMessage, event.channel);
-    });
-  }
-  if (event.text.includes('help') ){
-    await say(HELPMSG, event.channel);
-  }
-  if (event.text.includes('info')){
-    database.getUser(event.user)
-      .then(async (res) => {
-        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} bread!`;
-        await say(message, event.channel);
-      } 
-    );
-  }
-}); 
+
 
 // Determine if user is actually a user, given the userId
 // userList is an array of user objects
