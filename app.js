@@ -176,7 +176,7 @@ isUser = (userId, userList) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
-  console.debug('⚡️ Bolt app is running!');
+  console.debug(`⚡️ Bolt app is running on ${process.env.PORT}!`);
 })();
 
 // ==============================================================
@@ -206,6 +206,6 @@ restapi.get('/db/users', (req, res) => {
   
 })
 
-restapi.listen(8080, function() {
-  console.log(`RESTAPI listening on port 8080!`);
+restapi.listen(5000, function() {
+  console.log(`RESTAPI listening on port 5000!`);
 });
