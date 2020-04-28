@@ -74,7 +74,8 @@ say = (message, channel) => {
 }
 
 // Says hello when app home is opened
-slackEvents.on('app_home_opened', async ({ event}) => { 
+slackEvents.on('app_home_opened', async (event) => { 
+  console.log(event);
   try {
     let message =  `Hello <@${event.user}>!`
     console.log('app_home_opened event')
