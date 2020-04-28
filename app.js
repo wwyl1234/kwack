@@ -1,18 +1,33 @@
-const {App} = require('@slack/bolt');
+//const {App} = require('@slack/bolt');
 const database = require('./database');
 var express = require('express');
 var restapi = express();
 const bodyParser = require('body-parser')
+var router = express.Router();
+
+
+const {createEventAdapter}   = require('@slack/events-api')
+const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
+const  {WebClient}  = require('@slack/web-api')
+const webClient = new WebClient(process.env.SLACK_BOT_TOKEN)
+
+restapi.use(bodyParser.json())
+restapi.use(
+    bodyParser.urlencoded({
+    extended: true,
+  })
+)
+restapi.use('/slack/events', slackEvents.expressMiddleware())
 
 // Initializes your app with your bot token and signing secret
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-});
+//const app = new App({
+ // token: process.env.SLACK_BOT_TOKEN,
+ // signingSecret: process.env.SLACK_SIGNING_SECRET,
+//});
 
-const usersPromise = app.client.users.list({
-  token: process.env.SLACK_BOT_TOKEN
-});
+//const usersPromise = app.client.users.list({
+//  token: process.env.SLACK_BOT_TOKEN
+//});
 
 // This needs to be before TIMERID or be part of the definition
 // Update All Users at the given hour and given minute (GMT -4)
@@ -47,14 +62,27 @@ populateDatabase = () => {
     });
 }
 
+
+say = (message, channel) => {
+  webClient.chat.postMessage({
+    text: message,
+    channel: channel
+  });
+}
+
 // Says hello when app home is opened
-app.event('app_home_opened', async ({ event, say }) => {  
-    await say(`Hello <@${event.user}>!`);
+slackEvents.on('app_home_opened', async ({ event}) => { 
+  let message =  `Hello <@${event.user}>!`
+    console.log('app_home_opened event')
+    await say(message, event.channel);
 });
 
+
+
 // Listens to incoming messages that contain ":bread:"
-app.message(/.*:bread:.*/, async ({ message, say }) => {
-  let giver = message.user;
+//app.message(/.*:bread:.*/, async ({ message, say }) => {
+/*
+let giver = message.user;
   let receivers = [];
   let messageUserIds = [];
   try {
@@ -133,9 +161,11 @@ app.message(':taco:', async ({ message, say }) => {
   await say(newMessage);
 }); 
 
+*/
+
 
 // Listens to incoming messages from app mention event
-app.event('app_mention', async ({event, say }) => {
+slackEvents.on('app_mention', async ({event}) => {
   if (event.text.includes('leaderboard') ){
     let dbUsers = database.getUsers();
     dbUsers.then(function(res) {
@@ -145,17 +175,17 @@ app.event('app_mention', async ({event, say }) => {
         console.log(user, user['id'], user['breadRecieved']);
         newMessage += `<@${user['id']}> has total number of bread: ${user['breadRecieved']}. \n`
       }
-      say(newMessage);
+      say(newMessage, event.channel);
     });
   }
   if (event.text.includes('help') ){
-    await say(HELPMSG);
+    await say(HELPMSG, event.channel);
   }
   if (event.text.includes('info')){
     database.getUser(event.user)
       .then(async (res) => {
         let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} bread!`;
-        await say(message);
+        await say(message, event.channel);
       } 
     );
   }
@@ -173,39 +203,33 @@ isUser = (userId, userList) => {
 }
 
 
-(async () => {
+//(async () => {
   // Start your app
-  await app.start(process.env.PORT || 3000);
-  console.debug(`⚡️ Bolt app is running on ${process.env.PORT}!`);
-})();
+//  await app.start(process.env.PORT || 3000);
+ // console.debug(`⚡️ Bolt app is running on ${process.env.PORT}!`);
+//})();
 
 // ==============================================================
 // code for restapi
 
-restapi.use(bodyParser.json())
-restapi.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-)
 
-restapi.get('/slack/users', (req, res) => {
-  usersPromise.then(function(result) {
-    let userList = result['members'];
-    res.json(userList);
-    });
-  
+
+restapi.get('/slack/users', async (req, res) => {
+  let result = await webClient.users.list({token: process.env.SLACK_BOT_TOKEN})
+  let userList = result['members'];
+  res.json(userList);
 })
 
 restapi.get('/db/users', (req, res) => {
   let dbUsers = database.getUsers();
   dbUsers.then(function(result) {
     res.json(result);
-  
   });
+
   
 })
 
-restapi.listen(5000, function() {
-  console.log(`RESTAPI listening on port 5000!`);
+
+restapi.listen(process.env.PORT , function() {
+  console.log(`RESTAPI listening on port ${process.env.PORT}!`);
 });
