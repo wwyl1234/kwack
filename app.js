@@ -1,5 +1,8 @@
 const {App} = require('@slack/bolt');
 const database = require('./database');
+var express = require('express');
+var restapi = express();
+const bodyParser = require('body-parser')
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -175,3 +178,34 @@ isUser = (userId, userList) => {
   await app.start(process.env.PORT || 3000);
   console.debug('⚡️ Bolt app is running!');
 })();
+
+// ==============================================================
+// code for restapi
+
+restapi.use(bodyParser.json())
+restapi.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+)
+
+restapi.get('/slack/users', (req, res) => {
+  usersPromise.then(function(result) {
+    let userList = result['members'];
+    res.json(userList);
+    });
+  
+})
+
+restapi.get('/db/users', (req, res) => {
+  let dbUsers = database.getUsers();
+  dbUsers.then(function(result) {
+    res.json(result);
+  
+  });
+  
+})
+
+restapi.listen(8080, function() {
+  console.log(`RESTAPI listening on port 8080!`);
+});
