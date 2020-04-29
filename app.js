@@ -242,7 +242,7 @@ restapi.get('/leaders', (req, res) => {
 
 // Set isLeader property to be true to existing userid
 restapi.post('/add/leader', (req, res) => {
-  let userId = req.user_id;
+  let userId = req.body.user_id;
   console.log(userId)
   database.updateUser(userId, {isLeader: true})
     .then(result => {
@@ -253,7 +253,7 @@ restapi.post('/add/leader', (req, res) => {
 
 // Delete isLeader property to be false to existing userid
 restapi.post('/delete/leader', (req, res) => {
-  let userId = req.userId;
+  let userId = req.body.user_id;
   database.updateUser(userId, {isLeader: false})
     .then(result => res.json(result))
 })
