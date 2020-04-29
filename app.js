@@ -122,8 +122,9 @@ slackEvents.on('app_mention', async (event) => {
 //==============================================================
 // Slack messages
 
-// Listens to incoming messages that contain ":bread:"
-slackEvents.on('message.channels', async (event) => {
+// Listens to incoming messages
+slackEvents.on('message', async (event) => {
+  console.log(event)
 // /.*:bread:.*/
 let regex = /.*:bread:.*/;
 if (regex.test(event.text)){
