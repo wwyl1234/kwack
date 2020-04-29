@@ -117,10 +117,16 @@ class Database {
   };
 
   // Get all the users information
-  getUsers = async() => {
+  getUsers = async () => {
     let users = await this.User.find({}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
     return users;
   };
+
+  // Get leaders
+  getLeaders = async () => {
+    let leaders = await this.User.find({isLeader: trie}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
+    return leaders;
+  }
 
   // test function for my sanity
   test(){

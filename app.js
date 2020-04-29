@@ -21,17 +21,7 @@ restapi.use(
   })
 )
 
-
-// Initializes your app with your bot token and signing secret
-//const app = new App({
- // token: process.env.SLACK_BOT_TOKEN,
- // signingSecret: process.env.SLACK_SIGNING_SECRET,
-//});
-
-//const usersPromise = app.client.users.list({
-//  token: process.env.SLACK_BOT_TOKEN
-//});
-
+// TODO this timer functionality needs to be in a clock process 
 // This needs to be before TIMERID or be part of the definition
 // Update All Users at the given hour and given minute (GMT -4)
 updateAllUsers = (hour, minute) => {
@@ -214,7 +204,6 @@ breadListener =  async (event) => {
   }
 }
 
-
 // Determine if user is actually a user, given the userId
 // userList is an array of user objects
 isUser = (userId, userList) => {
@@ -226,34 +215,57 @@ isUser = (userId, userList) => {
   return foundUser.length == 0 ? false : true;
 }
 
-
-//(async () => {
-  // Start your app
-//  await app.start(process.env.PORT || 3000);
- // console.debug(`⚡️ Bolt app is running on ${process.env.PORT}!`);
-//})();
-
 // ==============================================================
 // code for restapi
 
 
-
+// Get users from Slack API
 restapi.get('/slack/users', async (req, res) => {
   let result = await webClient.users.list({token: process.env.SLACK_BOT_TOKEN})
   let userList = result['members'];
   res.json(userList);
 })
 
+// Get users from database
 restapi.get('/db/users', (req, res) => {
   let dbUsers = database.getUsers();
-  dbUsers.then(function(result) {
-    res.json(result);
-  });
+  dbUsers.then(result => res.json(result));
+})
 
-  
+// Get leaders from database
+restapi.get('/leaders', (req, res) => {
+  let dbLeaders = database.getLeaders();
+  dbLeaders.then(result => res.json(result));
+})
+
+// Set isLeader property to be true to existing userid
+restapi.post('/add/leader', (req, res) => {
+  let userId = req.userId;
+  database.updateUser(userId, {isLeader: true})
+    .then(result => res.json(result))
 })
 
 
+// Delete isLeader property to be false to existing userid
+restapi.post('/delete/leader', (req, res) => {
+  let userId = req.userId;
+  database.updateUser(userId, {isLeader: false})
+    .then(result => res.json(result))
+})
+
+// Refresh the bread to give for all users
+restapi.post('/replenish', (req, res) => {
+  database.updateAllUsers({breadToGive: 5})
+  .then((res) => res.json(res));
+})
+
+// Reset all users in the database to defaults
+restapi.post('/reset', (req, res) => {
+  database.updateAllUsers({breadToGive: 5, isLeader: false, breadRecieved: 0})
+  .then((res) => res.json(res));
+})
+
+// REST API server is listening on the given environment port
 restapi.listen(process.env.PORT , function() {
   console.log(`RESTAPI listening on port ${process.env.PORT}!`);
 });
