@@ -253,6 +253,7 @@ cheeseListener =  async (event) => {
               if (receivers.length == 0){
                 await say(`<@${giver}> wants to give cheese to someone!`, event.channel);
               } else {
+                let resultMessage = `<@${giver}> attempts to give cheese to someone!\n`;
                 receivers.forEach(function(userId) {
                   database.updateUser(userId, {$inc: {cheeseRecieved: 1}})
                     .then((res) => console.log(res));
