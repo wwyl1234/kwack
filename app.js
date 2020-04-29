@@ -197,8 +197,8 @@ breadListener =  async (event) => {
       return;
     } 
     filterActualUsers(messageUserIds)
-      .then( async (recievers) => {
-        if (recievers.length == 0){
+      .then( async (receivers) => {
+        if (receivers.length == 0){
           await say(`<@${giver}> wants to give bread to someone!`, event.channel);
         } else {
           let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
@@ -249,8 +249,8 @@ cheeseListener =  async (event) => {
           await say(`Only leaders can give cheese`, event.channel)
         } else {
           filterActualUsers(messageUserIds)
-            .then(async (recievers) => {
-              if (recievers.length == 0){
+            .then(async (receivers) => {
+              if (receivers.length == 0){
                 await say(`<@${giver}> wants to give cheese to someone!`, event.channel);
               } else {
                 receivers.forEach(function(userId) {
