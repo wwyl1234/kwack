@@ -136,7 +136,7 @@ slackEvents.on('message', async (event) => {
   }
 });
 
-tacoListener = (event) => {
+tacoListener = async (event) => {
   let newMessage = `This is not the heytaco app...
   It's raining tacos
   From out of the sky
@@ -150,7 +150,7 @@ tacoListener = (event) => {
   await say(newMessage, event.channel);
 }
 
-breadListener = (event) => {
+breadListener =  async (event) => {
   let giver = event.user;
   let receivers = [];
   let messageUserIds = [];
