@@ -261,13 +261,13 @@ restapi.post('/delete/leader', (req, res) => {
 // Refresh the bread to give for all users
 restapi.post('/replenish', (req, res) => {
   database.updateAllUsers({breadToGive: 5})
-  .then((res) => res.json(res));
+  .then((result) => res.json(result));
 })
 
 // Reset all users in the database to defaults
 restapi.post('/reset', (req, res) => {
   database.updateAllUsers({breadToGive: 5, isLeader: false, breadRecieved: 0})
-  .then((res) => res.json(res));
+  .then((result) => res.json(result));
 })
 
 // REST API server is listening on the given environment port
