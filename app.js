@@ -116,9 +116,14 @@ slackEvents.on('app_mention', async (event) => {
 slackEvents.on('message', async (event) => {
   console.log(event)
 
+  // Listens to incoming mesages that contain ":bread:"
   let regex = /.*:bread:.*/;
   if (regex.test(event.text)){
     breadListener(event);
+  }
+  // Listens to incoming mesages that contain ":cheese_wedge:"
+  if (/.*:cheese_wedge.*/.test(event.text)) {
+    cheeseListener(event);
   }
   // Listens to incoming messages that contain ":taco:"
   if (event.text.includes(':taco:')){
@@ -140,66 +145,123 @@ tacoListener = async (event) => {
   await say(newMessage, event.channel);
 }
 
+// Parse for <@{userid}>  in a text and checks if user is mentioned in text and 
+// returns a JSON  containing a list of usersIds not the same as user and 
+// boolean indicating if user is mentioned in text
+parseUsers = (user, text) => {
+  let messageUserIds = [];
+  let regex = /<@(\w+)>/g
+  let match = regex.exec(text);
+  let mentionSelf = false;
+  while (match != null) {
+    let userId = match[1];
+    if (userId == user){
+      mentionSelf = true;
+    }
+    messageUserIds.push(userId);
+    match = regex.exec(text);
+  }
+  return {
+    users: messageUserIds, 
+    mentionSelf: mentionSelf
+  }
+}
+
+filterActualUsers = async (users) => {
+  let receivers = [];
+  let result =  await webClient.users.list({token: process.env.SLACK_BOT_TOKEN});
+  let userList = result['members'];
+  // figure out if username is actually a user 
+  users.forEach(function (userid){
+    if (isUser(userid, userList)){
+      receivers.push(userid);
+    }
+  });
+  return receivers;
+}
+
 breadListener =  async (event) => {
   let giver = event.user;
-  let receivers = [];
-  let messageUserIds = [];
+  
   try {
     // Parse for <@{userid}> and check if currentUser is in the message as well
-    let regex = /<@(\w+)>/g
-    let match = regex.exec(event.text);
-    let mentionSelf = false;
-    while (match != null) {
-      let userId = match[1]
-      if (userId == giver){
-        mentionSelf = true;
-      }
-      messageUserIds.push(userId);
-      match = regex.exec(event.text);
-    }
+    let parsedResult = parseUsers(giver, event.text);
+    let mentionSelf = parsedResult['mentionSelf'];
+    let messageUserIds = parsedResult['users'];
 
     // to prevent user from giving themselves bread
     if (mentionSelf === true){
       await say(`Stop trying to cheat the system. You cannot give bread to yourself!`, event.channel)
       return;
     } 
-
-    let result =  await webClient.users.list({token: process.env.SLACK_BOT_TOKEN});
-    let userList = result['members'];
-    // figure out if username is actually a user 
-    messageUserIds.forEach(function (userid){
-      if (isUser(userid, userList)){
-        receivers.push(userid);
-      }
-    });
-     
-
-    if (receivers.length == 0){
-      await say(`<@${giver}> wants to give bread to someone!`, event.channel);
-    } else {
-      let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
-      // to prevent user from giving out more bread than they have 
-      let giverData =  database.getUser(giver);
-      giverData.then(async function(res){
-        console.debug(`giver:`, res);
-        if (res.breadToGive < receivers.length) {
-          resultMessage += `<@${giver}> does not have enough bread to give.`
+    filterActualUsers(messageUserIds)
+      .then(recievers => {
+        if (recievers.length == 0){
+          await say(`<@${giver}> wants to give bread to someone!`, event.channel);
         } else {
-          let numBread = -1 * receivers.length;
-          database.updateUser(giver, {$inc: {breadToGive: numBread}})
-            .then((res) => console.log(res));
-          receivers.forEach(function(userId) {
-            database.updateUser(userId, {$inc: {breadRecieved: 1}})
-              .then((res) => console.log(res));
-            resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
-            });
+          let resultMessage = `<@${giver}> attempts to give bread to someone!\n`;
+          // to prevent user from giving out more bread than they have 
+          let giverData =  database.getUser(giver);
+          giverData.then(async function(res){
+            console.debug(`giver:`, res);
+            if (res.breadToGive < receivers.length) {
+              resultMessage += `<@${giver}> does not have enough bread to give.`
+            } else {
+              let numBread = -1 * receivers.length;
+              database.updateUser(giver, {$inc: {breadToGive: numBread}})
+                .then((res) => console.log(res));
+              receivers.forEach(function(userId) {
+                database.updateUser(userId, {$inc: {breadRecieved: 1}})
+                  .then((res) => console.log(res));
+                resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
+                });
+            }
+            await say(resultMessage, event.channel);
+            })
         }
-        await say(resultMessage, event.channel);
-        })
-    }
-    
+      })
   }
   catch (error) {
+    console.error(error);
+  }
+}
+
+cheeseListener =  async (event) => {
+  let giver = event.user;
+  try {
+    // Parse for <@{userid}> and check if currentUser is in the message as well
+    let parsedResult = parseUsers(giver, event.text);
+    let mentionSelf = parsedResult['mentionSelf'];
+    let messageUserIds = parsedResult['users'];
+
+    // to prevent user from giving themselves cheese
+    if (mentionSelf === true){
+      await say(`Stop trying to cheat the system. You cannot give cheese to yourself!`, event.channel)
+      return;
+    } 
+
+    // only leader can give cheese
+    database.isLeader(giver)
+      .then(result => {
+        if (!result){
+          await say(`Only leaders can give cheese`, event.channel)
+        } else {
+          filterActualUsers(messageUserIds)
+            .then(recievers => {
+              if (recievers.length == 0){
+                await say(`<@${giver}> wants to give cheese to someone!`, event.channel);
+              } else {
+                receivers.forEach(function(userId) {
+                  database.updateUser(userId, {$inc: {cheeseRecieved: 1}})
+                    .then((res) => console.log(res));
+                  resultMessage += `<@${userId}> got cheese from <@${giver}>!\n`;
+                  });
+                  await say(resultMessage, event.channel);
+              }
+            })
+        }
+      })
+  } catch (error) {
     console.error(error);
   }
 }

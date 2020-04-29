@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema({
   isLeader: Boolean
 });
 
+userSchema.add(
+  {
+    cheeseRecieved: {type: Number, default: 0}
+  }
+)
+
 class Database {
 
   constructor(){
@@ -62,14 +68,18 @@ class Database {
     });
   }
 
-  // Determine if user is actually a user, given the userId
-  // userList is an array of user objects from the slack API
-  isUser = (userId, userList) => {
-    let foundUser = userList.filter(function (user){
-      return user['id'] == userId && user['is_bot'] == false;
-    });
-    // foundUser is an array
-    return foundUser.length == 0 ? false : true;
+  // Return true is user is a leader. Otherwise return false.
+  isLeader = async (userId) => {
+    let user = await this.User.findOne({id: userId}).exec();
+    console.debug(user);
+    if (user){
+      if (user['isLeader'] == true) {
+        return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
   }
 
   // Add User 
