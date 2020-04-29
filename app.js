@@ -18,23 +18,6 @@ restapi.use(
   })
 )
 
-// TODO this timer functionality needs to be in a clock process 
-// This needs to be before TIMERID or be part of the definition
-// Update All Users at the given hour and given minute (GMT -4)
-updateAllUsers = (hour, minute) => {
-  // Based on local Canada time
-  let date = new Date().toLocaleString('en-CA', {hour12: false, timeZone: 'America/Toronto'});
-  let dateArray = date.split(',');
-  let timeArray = dateArray[1].split (':');
-  if (timeArray[0] == hour && timeArray[1] == minute) {
-    console.log(date, 'update has been called');
-    database.updateAllUsers({breadToGive: 5})
-      .then((res) => console.log(res));
-  }
-}
-
-const TIMERID = setInterval(updateAllUsers, 60000, 9, 42);
-
 const HELPMSG =`
 To get help, type: '@kwack help' \n
 To give bread to another user, type:  ':bread: <username>'\n
