@@ -91,7 +91,8 @@ slackEvents.on('app_mention', async (event) => {
       for (let i = 0; i < res.length; i++){
         let user = res[i];
         console.log(user, user['id'], user['breadRecieved']);
-        newMessage += `<@${user['id']}> has total number of bread: ${user['breadRecieved']}. \n`
+        newMessage += `<@${user['id']}> has recieved ${user['breadRecieved']} bread and 
+        ${user['cheeseRecieved']} cheese. \n`
       }
       say(newMessage, event.channel);
     });
@@ -102,7 +103,8 @@ slackEvents.on('app_mention', async (event) => {
   if (event.text.includes('info')){
     database.getUser(event.user)
       .then(async (res) => {
-        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadRecieved} bread!`;
+        let message = `You have ${res.breadToGive} bread left to give and 
+        have recieved ${res.breadRecieved} bread and ${res.cheeseRecieved} cheese`;
         await say(message, event.channel);
       } 
     );
