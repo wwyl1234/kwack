@@ -236,6 +236,8 @@ restapi.get('/db/users', (req, res) => {
 restapi.get('/leaders', (req, res) => {
   let dbLeaders = database.getLeaders();
   dbLeaders.then(result => res.json(result));
+  // If it is empty or error occurs
+  dbLeaders.catch(err => res.json(err));
 })
 
 // Set isLeader property to be true to existing userid

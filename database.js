@@ -124,7 +124,7 @@ class Database {
 
   // Get leaders
   getLeaders = async () => {
-    let leaders = await this.User.find({isLeader: trie}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
+    let leaders = await this.User.find({isLeader: true}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
     return leaders;
   }
 
