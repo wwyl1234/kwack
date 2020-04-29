@@ -1,10 +1,7 @@
-//const {App} = require('@slack/bolt');
 const database = require('./database');
 var express = require('express');
 var restapi = express();
 const bodyParser = require('body-parser')
-var router = express.Router();
-
 
 const {createEventAdapter}   = require('@slack/events-api')
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
@@ -41,18 +38,19 @@ const TIMERID = setInterval(updateAllUsers, 60000, 9, 42);
 const HELPMSG =`
 To get help, type: '@kwack help' \n
 To give bread to another user, type:  ':bread: <username>'\n
+Only leaders can give cheese to another user, by typing:  ':cheese_wedge: <username>'\n
 To see the leaderboard, type: '@kwack leaderboard' \n
 To get info about yourself, type: '@kwack info' \n
 `
 
-populateDatabase = () => {
-  let result = usersPromise.then(async function(res) {
-    console.debug(res);
-    // here use the result of users.list 
-    let usersList = res['members'];
-    database.populate(usersList)
+populateDatabase = async () => {
+  let result = await webClient.users.list({token: process.env.SLACK_BOT_TOKEN})
+  console.debug(result);
+  // here use the result of users.list 
+  let usersList = result['members'];
+  database.populate(usersList)
     .then((res) => console.log(res));
-    });
+    
 }
 
 // Use Web Client to send message back to Slack
@@ -90,9 +88,8 @@ slackEvents.on('app_mention', async (event) => {
       let newMessage= '';
       for (let i = 0; i < res.length; i++){
         let user = res[i];
-        console.log(user, user['id'], user['breadRecieved']);
-        newMessage += `<@${user['id']}> has recieved ${user['breadRecieved']} bread and 
-        ${user['cheeseRecieved']} cheese. \n`
+        console.log(user, user['id'], user['breadReceived']);
+        newMessage += `<@${user['id']}> has recieved ${user['breadReceived']} bread and ${user['cheeseReceived']} cheese.\n`
       }
       say(newMessage, event.channel);
     });
@@ -103,8 +100,7 @@ slackEvents.on('app_mention', async (event) => {
   if (event.text.includes('info')){
     database.getUser(event.user)
       .then(async (res) => {
-        let message = `You have ${res.breadToGive} bread left to give and 
-        have recieved ${res.breadRecieved} bread and ${res.cheeseRecieved} cheese`;
+        let message = `You have ${res.breadToGive} bread left to give and have recieved ${res.breadReceived} bread and ${res.cheeseReceived} cheese`;
         await say(message, event.channel);
       } 
     );
@@ -213,7 +209,7 @@ breadListener =  async (event) => {
               database.updateUser(giver, {$inc: {breadToGive: numBread}})
                 .then((res) => console.log(res));
               receivers.forEach(function(userId) {
-                database.updateUser(userId, {$inc: {breadRecieved: 1}})
+                database.updateUser(userId, {$inc: {breadReceived: 1}})
                   .then((res) => console.log(res));
                 resultMessage += `<@${userId}> got bread from <@${giver}>!\n`;
                 });
@@ -255,7 +251,7 @@ cheeseListener =  async (event) => {
               } else {
                 let resultMessage = `<@${giver}> attempts to give cheese to someone!\n`;
                 receivers.forEach(function(userId) {
-                  database.updateUser(userId, {$inc: {cheeseRecieved: 1}})
+                  database.updateUser(userId, {$inc: {cheeseReceived: 1}})
                     .then((res) => console.log(res));
                   resultMessage += `<@${userId}> got cheese from <@${giver}>!\n`;
                   });
@@ -331,7 +327,7 @@ restapi.post('/replenish', (req, res) => {
 
 // Reset all users in the database to defaults
 restapi.post('/reset', (req, res) => {
-  database.updateAllUsers({breadToGive: 5, isLeader: false, breadRecieved: 0})
+  database.updateAllUsers({breadToGive: 5, isLeader: false, breadReceived: 0})
   .then((result) => res.json(result));
 })
 

@@ -2,14 +2,14 @@ var mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   id: {type: String, required: true},
-  breadRecieved: {type: Number, default: 0},
+  breadReceived: {type: Number, default: 0},
   breadToGive: {type: Number, default: 5},
   isLeader: Boolean
 });
 
 userSchema.add(
   {
-    cheeseRecieved: {type: Number, default: 0}
+    cheeseReceived: {type: Number, default: 0}
   }
 )
 
@@ -58,8 +58,9 @@ class Database {
           (user)=> {
             return {
               id: user['id'],
-              breadRecieved: 0,
+              breadReceived: 0,
               breadToGive: 5,
+              cheeseReceived: 0,
               isLeader: false
           }});
           let result = await this.User.create(users).exec() 
@@ -86,7 +87,7 @@ class Database {
   addUser = async (userId) => {
     let user = {
       id: userId,
-      breadRecieved: 0,
+      breadReceived: 0,
       breadToGive: 5,
       isLeader: false
     };
@@ -128,20 +129,15 @@ class Database {
 
   // Get all the users information
   getUsers = async () => {
-    let users = await this.User.find({}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
+    let users = await this.User.find({}).sort({breadReceived: -1}).select({_id: 0, __v: 0}).exec();
     return users;
   };
 
   // Get leaders
   getLeaders = async () => {
-    let leaders = await this.User.find({isLeader: true}).sort({breadRecieved: -1}).select({_id: 0, __v: 0}).exec();
+    let leaders = await this.User.find({isLeader: true}).sort({breadReceived: -1}).select({_id: 0, __v: 0}).exec();
     return leaders;
   }
-
-  // test function for my sanity
-  test(){
-    console.debug(`This test method words`);
-  };
 };
 
 
