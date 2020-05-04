@@ -110,6 +110,12 @@ slackEvents.on('message', async (event) => {
   if (event.text.includes(':taco:')){
     tacoListener(event);
   }
+
+  // Listen to Slackbot reminder message to replenish
+  if (event.text.includes('replenish') && event.user == 'USLACKBOT'){
+    replenish();
+  }
+
 });
 
 tacoListener = async (event) => {
@@ -257,6 +263,12 @@ isUser = (userId, userList) => {
   });
   // foundUser is an array
   return foundUser.length == 0 ? false : true;
+}
+
+// replenish bread to give
+replenish = () => {
+  database.updateAllUsers({breadToGive: 5})
+  .then((result) => res.json(result));
 }
 
 // ==============================================================
