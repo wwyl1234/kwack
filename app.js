@@ -268,7 +268,7 @@ isUser = (userId, userList) => {
 // replenish bread to give
 replenish = () => {
   database.updateAllUsers({breadToGive: 5})
-  .then((result) => res.json(result));
+    .then((result) => console.log(result));
 }
 
 // ==============================================================
