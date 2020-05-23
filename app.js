@@ -320,9 +320,15 @@ restapi.post('/replenish', (req, res) => {
   .then((result) => res.json(result));
 })
 
-// Reset all users in the database to defaults
+// Reset all to defaults except for isLeader
 restapi.post('/reset', (req, res) => {
-  database.updateAllUsers({breadToGive: 5, isLeader: false, breadReceived: 0})
+  database.updateAllUsers({breadToGive: 5, breadReceived: 0, cheeseReceived: 0})
+  .then((result) => res.json(result));
+})
+
+// Reset all users in the database to defaults
+restapi.post('/hardreset', (req, res) => {
+  database.updateAllUsers({breadToGive: 5, isLeader: false, breadReceived: 0, cheeseReceived: 0})
   .then((result) => res.json(result));
 })
 
