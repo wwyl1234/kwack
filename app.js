@@ -97,6 +97,11 @@ slackEvents.on('app_mention', async (event) => {
 slackEvents.on('message', async (event) => {
   console.log(event)
 
+  // Do not listen to messages that has been edited
+  if (event['subtype'] =='message_changed'){
+    return
+  }
+
   // Listens to incoming mesages that contain ":bread:"
   let regex = /.*:bread:.*/;
   if (regex.test(event.text)){
