@@ -279,7 +279,7 @@ replenish = () => {
     .then((result) => console.log(result));
 }
 
-// get new users from Slack
+// get new users from Slack and add them to db
 getNewUsers = async() => {
   let newUsers = [];
   let slackUsers =  await webClient.users.list({token: process.env.SLACK_BOT_TOKEN});
@@ -303,6 +303,10 @@ getNewUsers = async() => {
         newUsers.push(slackUser['id'])
       }
     })
+    newUsers.forEach(userId => {
+      database.addUser(userId)
+        .then(res => console.log(res))
+      })
     return newUsers;
   })
 }
@@ -326,18 +330,12 @@ restapi.get('/db/users', (req, res) => {
 
 // Update new users from Slack to database
 restapi.post('/db/update/userslist', async (req, res) => {
-  let newUsers = await getNewUsers();
-  console.log(newUsers);
-  res.json(newUsers);
-  
- 
-  /*
-  newUsers.forEach(userId => {
-    database.addUser(userId)
-      .then(res => console.log(res))
-    })
-  */
- 
+  let newUsers = getNewUsers();
+  newUsers.then(result => {
+    res.json(result)
+  });
+  newUsers.catch(err => res.json(err));
+
 })
 
 // Get leaders from database
