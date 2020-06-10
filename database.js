@@ -95,7 +95,7 @@ class Database {
 
     let existingUser = await this.User.findOne({id: userId}).exec();
     if (!existingUser){
-      let result = await this.User.create(user).exec();
+      let result = await this.User.create(user);
       console.log('Creating User.')
       return result;
     } else {
