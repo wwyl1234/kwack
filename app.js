@@ -301,8 +301,10 @@ getNewUsers = async() => {
       })
       if (isUserInDB == false){
         newUsers.push(slackUser['id'])
+        console.log(newUsers)
       }
     })
+    console.log(newUsers)
     return newUsers;
   })
 }
