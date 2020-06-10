@@ -301,10 +301,8 @@ getNewUsers = async() => {
       })
       if (isUserInDB == false){
         newUsers.push(slackUser['id'])
-        console.log(newUsers)
       }
     })
-    console.log(newUsers)
     return newUsers;
   })
 }
@@ -327,12 +325,11 @@ restapi.get('/db/users', (req, res) => {
 })
 
 // Update new users from Slack to database
-restapi.post('/db/update/userslist', (req, res) => {
-  getNewUsers()
-    .then(newUsers => {
-      console.log(newUsers);
-      res.json(newUsers);
-    })
+restapi.post('/db/update/userslist', async (req, res) => {
+  let newUsers = await getNewUsers();
+  console.log(newUsers);
+  res.json(newUsers);
+  
  
   /*
   newUsers.forEach(userId => {
