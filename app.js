@@ -232,6 +232,8 @@ cheeseListener =  async (event) => {
       return;
     } 
 
+    console.log("parsedResult:", parsedResult)
+
     // only leader can give cheese
     database.isLeader(giver)
       .then(async (result) => {
@@ -240,6 +242,7 @@ cheeseListener =  async (event) => {
         } else {
           filterActualUsers(messageUserIds)
             .then(async (receivers) => {
+              console.log('receivers:', receivers)
               if (receivers.length == 0){
                 await say(`<@${giver}> wants to give cheese to someone!`, event.channel);
               } else {
@@ -321,8 +324,7 @@ restapi.post('/delete/leader', (req, res) => {
 
 // Refresh the bread to give for all users
 restapi.post('/replenish', (req, res) => {
-  database.updateAllUsers({breadToGive: 5})
-  .then((result) => res.json(result));
+  replenish()
 })
 
 // Reset all to defaults except for isLeader
@@ -335,6 +337,30 @@ restapi.post('/reset', (req, res) => {
 restapi.post('/hardreset', (req, res) => {
   database.updateAllUsers({breadToGive: 5, isLeader: false, breadReceived: 0, cheeseReceived: 0})
   .then((result) => res.json(result));
+})
+
+// For debugging and testing purposes and setting the correct bread or cheese received due to bug or any unseen circumstances
+
+// Set bread recieved for this user
+restapi.post('/set/breadReceived', (req, res) => {
+  let userId = req.body.user_id;
+  let breadReceived = parseInt(req.body.bread_received)
+  database.updateUser(userId, {breadReceived : breadReceived})
+    .then(result => {
+      console.log(result);
+      res.json(result)})
+    .catch( err => console.log(err))
+})
+
+// Set cheese recieved for this user
+restapi.post('/set/cheeseReceived', (req, res) => {
+  let userId = req.body.user_id;
+  let cheeseReceived = parseInt(req.body.cheese_received)
+  database.updateUser(userId, {cheeseReceived : cheeseReceived })
+    .then(result => {
+      console.log(result);
+      res.json(result)})
+    .catch( err => console.log(err))
 })
 
 // REST API server is listening on the given environment port
