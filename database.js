@@ -89,6 +89,7 @@ class Database {
       id: userId,
       breadReceived: 0,
       breadToGive: 5,
+      cheeseReceived: 0,
       isLeader: false
     };
 

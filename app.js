@@ -279,6 +279,34 @@ replenish = () => {
     .then((result) => console.log(result));
 }
 
+// get new users from Slack
+getNewUsers = async() => {
+  let newUsers = [];
+  let slackUsers =  await webClient.users.list({token: process.env.SLACK_BOT_TOKEN});
+  let slackUsersList = slackUsers['members'];
+  // figure out if username is actually a user
+  let actualUsers = slackUsersList.filter(function (user){
+    return user['is_bot'] == false;
+  });
+ 
+  let dbUsers = database.getUsers();
+  dbUsers.then(result => {
+    // for each user in actualUsers check if it is in the db, if not add it to newUsers
+    actualUsers.forEach( slackUser => {
+      isUserInDB = false
+      result.forEach( dbUser => {
+        if (slackUser['id'] == dbUser['id']){
+          isUserInDB = true;
+        }
+      })
+      if (isUserInDB == false){
+        newUsers.push(dbUser['id'])
+      }
+    })
+    return newUsers;
+  })
+}
+
 // ==============================================================
 // code for restapi
 
@@ -294,6 +322,23 @@ restapi.get('/slack/users', async (req, res) => {
 restapi.get('/db/users', (req, res) => {
   let dbUsers = database.getUsers();
   dbUsers.then(result => res.json(result));
+})
+
+// Update new users from Slack to database
+restapi.post('/db/update/userslist', (req, res) => {
+  getNewUsers()
+    .then(newUsers => {
+      console.log(newUsers);
+      res.json(newUsers);
+    })
+ 
+  /*
+  newUsers.forEach(userId => {
+    database.addUser(userId)
+      .then(res => console.log(res))
+    })
+  */
+ 
 })
 
 // Get leaders from database
