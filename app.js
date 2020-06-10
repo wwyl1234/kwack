@@ -300,7 +300,7 @@ getNewUsers = async() => {
         }
       })
       if (isUserInDB == false){
-        newUsers.push(dbUser['id'])
+        newUsers.push(slackUser['id'])
       }
     })
     return newUsers;
